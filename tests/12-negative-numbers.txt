@@ -1,0 +1,7 @@
+// Test Case: Negative Numbers
+// Expected: All phases PASS
+
+int negative = -100;
+double negativeDecimal = -99.99;
+float negativeFloat = -3.14f;
+long negativeLong = -1000000L;

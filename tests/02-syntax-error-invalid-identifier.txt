@@ -1,0 +1,6 @@
+// Test Case: Invalid Identifier (starts with number)
+// Expected: Syntax Phase ERROR
+
+int 123invalid = 10;
+String name = "John";
+double price = 99.99;

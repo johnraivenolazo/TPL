@@ -1,0 +1,10 @@
+// Test Case: All Valid Declarations
+// Expected: All phases PASS
+
+int age = 25;
+double salary = 50000.50;
+String name = "Juan";
+boolean isActive = true;
+char grade = 'A';
+float rate = 3.14f;
+long distance = 1000000;

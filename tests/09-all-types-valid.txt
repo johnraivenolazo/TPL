@@ -1,0 +1,12 @@
+// Test Case: All Java Types with Valid Values
+// Expected: All phases PASS
+
+byte small = 127;
+short medium = 32000;
+int count = 1000000;
+long big = 9999999999L;
+float decimal = 3.14f;
+double precise = 3.14159265;
+char letter = 'Z';
+boolean flag = true;
+String text = "Hello World";

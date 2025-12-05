@@ -1,0 +1,7 @@
+// Test Case: Escape Sequences in Char and String
+// Expected: All phases PASS
+
+char newline = '\n';
+char tab = '\t';
+String message = "Hello\nWorld";
+char quote = '\'';

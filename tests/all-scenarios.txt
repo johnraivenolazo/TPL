@@ -1,0 +1,119 @@
+// ========================================
+// TEST CASE 01: All Valid Declarations
+// Expected: All phases PASS
+// ========================================
+
+int age = 25;
+double salary = 50000.50;
+String name = "Juan";
+boolean isActive = true;
+char grade = 'A';
+float rate = 3.14f;
+long distance = 1000000;
+
+// ========================================
+// TEST CASE 02: Invalid Identifier (starts with number)
+// Expected: Syntax Phase ERROR
+// ========================================
+
+int 123invalid = 10;
+String name = "John";
+double price = 99.99;
+
+// ========================================
+// TEST CASE 03: Type Mismatch Errors
+// Expected: Semantic Phase ERROR
+// ========================================
+
+int x = 10;
+String y = 123;
+boolean flag = "true";
+double price = false;
+
+// ========================================
+// TEST CASE 04: Invalid Character
+// Expected: Lexical Phase ERROR
+// ========================================
+
+int x = 10@;
+String name = "Test";
+
+// ========================================
+// TEST CASE 05: Invalid Char Literal (multiple characters)
+// Expected: Lexical Phase ERROR
+// ========================================
+
+char letter = 'abc';
+int x = 10;
+
+// ========================================
+// TEST CASE 06: Missing Semicolon
+// Expected: Syntax Phase ERROR
+// ========================================
+
+int x = 10
+String name = "Test";
+
+// ========================================
+// TEST CASE 07: Invalid Type
+// Expected: Syntax Phase ERROR
+// ========================================
+
+integer x = 10;
+double price = 99.99;
+
+// ========================================
+// TEST CASE 08: Duplicate Variable Declaration
+// Expected: Semantic Phase ERROR
+// ========================================
+
+int x = 10;
+double x = 20.5;
+String name = "Test";
+
+// ========================================
+// TEST CASE 09: All Java Types with Valid Values
+// Expected: All phases PASS
+// ========================================
+
+byte small = 127;
+short medium = 32000;
+int count = 1000000;
+long big = 9999999999L;
+float decimal = 3.14f;
+double precise = 3.14159265;
+char letter = 'Z';
+boolean flag = true;
+String text = "Hello World";
+
+// ========================================
+// TEST CASE 10: Valid Widening Conversions
+// Expected: All phases PASS
+// ========================================
+
+byte b = 10;
+short s = 100;
+int i = 1000;
+long l = 10000;
+float f = 3.14f;
+double d = 99.99;
+
+// ========================================
+// TEST CASE 11: Escape Sequences in Char and String
+// Expected: All phases PASS
+// ========================================
+
+char newline = '\n';
+char tab = '\t';
+String message = "Hello\nWorld";
+char quote = '\'';
+
+// ========================================
+// TEST CASE 12: Negative Numbers
+// Expected: All phases PASS
+// ========================================
+
+int negative = -100;
+double negativeDecimal = -99.99;
+float negativeFloat = -3.14f;
+long negativeLong = -1000000L;

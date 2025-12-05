@@ -1,0 +1,5 @@
+// Test Case: Missing Semicolon
+// Expected: Syntax Phase ERROR
+
+int x = 10
+String name = "Test";

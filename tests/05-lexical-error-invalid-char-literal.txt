@@ -1,0 +1,5 @@
+// Test Case: Invalid Char Literal (multiple characters)
+// Expected: Lexical Phase ERROR
+
+char letter = 'abc';
+int x = 10;

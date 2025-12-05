@@ -1,0 +1,6 @@
+// Test Case: Duplicate Variable Declaration
+// Expected: Semantic Phase ERROR
+
+int x = 10;
+double x = 20.5;
+String name = "Test";

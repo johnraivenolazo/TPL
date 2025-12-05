@@ -1,0 +1,5 @@
+// Test Case: Invalid Type
+// Expected: Syntax Phase ERROR
+
+integer x = 10;
+double price = 99.99;

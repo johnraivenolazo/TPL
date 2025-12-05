@@ -1,0 +1,7 @@
+// Test Case: Type Mismatch Errors
+// Expected: Semantic Phase ERROR
+
+int x = 10;
+String y = 123;
+boolean flag = "true";
+double price = false;
