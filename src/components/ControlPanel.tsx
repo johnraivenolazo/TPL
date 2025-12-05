@@ -49,7 +49,7 @@ export function ControlPanel({
       <input
         ref={fileInputRef}
         type="file"
-        accept=".txt,.js,.ts,.tsx,.json,.md"
+        accept=".java,.txt"
         className="hidden"
         onChange={onFileChange}
       />

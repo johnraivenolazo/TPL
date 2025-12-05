@@ -29,6 +29,12 @@ export function useCompiler() {
     const file = event.target.files?.[0]
     if (!file) return
 
+    if (!file.name.endsWith('.java') && !file.name.endsWith('.txt')) {
+      alert('Please select a valid Java file (.java) or text file (.txt)')
+      if (fileInputRef.current) fileInputRef.current.value = ''
+      return
+    }
+
     const text = await file.text()
     setFileName(file.name)
     setSource(text)
