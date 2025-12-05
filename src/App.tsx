@@ -318,17 +318,15 @@ function App() {
     <div className="relative min-h-screen bg-surface">
       <div className="absolute inset-0 glass-sheen" aria-hidden />
       <main className="relative mx-auto max-w-6xl px-6 py-12 space-y-8 bg-grid">
-        <header className="space-y-4 rounded-3xl border border-slate-800 bg-slate-950/80 p-6 shadow-card backdrop-blur grid-overlay">
+        <header className="space-y-4 rounded-3xl border border-slate-800 bg-black/80 p-6 shadow-card backdrop-blur grid-overlay">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-slate-300">Front-end only</span>
-            <span className="rounded-full bg-emerald-900/50 px-3 py-1 text-xs text-emerald-200 border border-emerald-700">Lexical · Syntax · Semantic</span>
-            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] text-slate-300">No codegen • No opt</span>
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-slate-300">Front-end pipeline</span>
+            <span className="rounded-full bg-emerald-900/50 px-3 py-1 text-xs text-emerald-200 border border-emerald-700">Lexical • Syntax • Semantic</span>
+            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] text-slate-300">No codegen / opt</span>
           </div>
           <div className="space-y-3">
-            <h1 className="text-3xl font-bold text-slate-50 leading-snug md:text-4xl">Upload → tokenize → parse → semantic-check</h1>
-            <p className="max-w-4xl text-sm text-slate-300">
-              Gated pipeline for clarity. Load a file (or quick demo), then step through lexical, syntax, and semantic phases. Results and counts update live.
-            </p>
+            <h1 className="text-3xl font-bold text-slate-50 leading-snug md:text-4xl">Lex → Parse → Check</h1>
+            <p className="max-w-4xl text-sm text-slate-300">Load a snippet or the demo, run each phase in order, and watch the outputs update.</p>
             <div className="grid gap-3 sm:grid-cols-3">
               <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3 text-sm text-slate-200 shadow-inner">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Phase</p>
@@ -347,7 +345,7 @@ function App() {
         </header>
 
         <section className="grid gap-4 lg:grid-cols-[320px_1fr]">
-          <div className="space-y-4 rounded-2xl border border-slate-800 bg-slate-950/80 p-4 shadow-card backdrop-blur">
+          <div className="space-y-4 rounded-2xl border border-slate-800 bg-black/80 p-4 shadow-card backdrop-blur">
             <div className="flex items-center justify-between">
               <div className="space-y-1">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Controls</p>
@@ -364,7 +362,6 @@ function App() {
                 Open File
               </button>
               <input ref={fileInputRef} type="file" accept=".txt,.js,.ts,.tsx,.json,.md" className="hidden" onChange={handleFileChange} />
-              <p className="text-xs text-slate-400">Loads code into the Code Text Area. Buttons stay disabled until a file is loaded.</p>
               <button
                 onClick={() => {
                   setSource(demoSource)
@@ -391,7 +388,6 @@ function App() {
               >
                 Lexical Analysis
               </button>
-              <p className="text-xs text-slate-400">Enables after a file is opened. Tokenizes source.</p>
             </div>
 
             <div className="space-y-2">
@@ -404,7 +400,6 @@ function App() {
               >
                 Syntax Analysis
               </button>
-              <p className="text-xs text-slate-400">Enables after lexical succeeds. Builds a compact AST.</p>
             </div>
 
             <div className="space-y-2">
@@ -417,7 +412,6 @@ function App() {
               >
                 Semantic Analysis
               </button>
-              <p className="text-xs text-slate-400">Enables after syntax succeeds. Checks scope/type consistency.</p>
             </div>
 
             <div className="space-y-2">
@@ -430,7 +424,6 @@ function App() {
               >
                 Clear
               </button>
-              <p className="text-xs text-slate-400">Resets source and results.</p>
             </div>
 
             <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 text-xs text-slate-300 shadow-inner">
@@ -451,30 +444,30 @@ function App() {
 
             <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 text-xs text-slate-300 shadow-inner">
               <p className="font-semibold text-slate-100">Status</p>
-              <p className="mt-1 text-slate-300">{message ? message.text : 'Awaiting file load.'}</p>
+              <p className="mt-1 text-slate-300">{message ? message.text : 'Waiting for input.'}</p>
               {fileName && <p className="mt-1 text-slate-400">File: {fileName}</p>}
               <p className="mt-1 text-slate-400">Phase: {phase}</p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 shadow-card backdrop-blur">
+            <div className="rounded-2xl border border-slate-800 bg-black/80 p-4 shadow-card backdrop-blur">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Code Text Area</p>
-                  <h3 className="text-lg font-semibold text-slate-50">Source</h3>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Source</p>
+                  <h3 className="text-lg font-semibold text-slate-50">Input</h3>
                 </div>
-                <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] text-slate-300">Read-only preview</span>
+                <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] text-slate-300">Preview</span>
               </div>
               <div className="mt-3 max-h-72 overflow-auto rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-sm text-slate-100 shadow-inner">
-                {source ? source : <span className="text-slate-500">Load a file to display its contents.</span>}
+                {source ? source : <span className="text-slate-500">Load a file or the demo to view it here.</span>}
               </div>
             </div>
 
-            <div className="rounded-2xl border border-slate-800 bg-slate-950/80 p-4 shadow-card backdrop-blur">
+            <div className="rounded-2xl border border-slate-800 bg-black/80 p-4 shadow-card backdrop-blur">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Result Text Area</p>
+                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Results</p>
                   <h3 className="text-lg font-semibold text-slate-50">{resultPhase}</h3>
                 </div>
                 <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] text-slate-300">Latest run</span>

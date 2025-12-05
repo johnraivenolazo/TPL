@@ -1,8 +1,8 @@
 .glass-sheen {
   position: absolute;
   inset: 0;
-  background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.12), transparent 35%),
-    radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.12), transparent 30%);
+  background: radial-gradient(circle at 20% 20%, rgba(56, 189, 248, 0.08), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(168, 85, 247, 0.08), transparent 30%);
   pointer-events: none;
 }
 
