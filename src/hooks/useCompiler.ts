@@ -1,8 +1,6 @@
 import { useState, useRef } from 'react'
 import type { AstNode, PhaseState, Token, SemanticFinding, PhaseResult } from '../types/compiler.types'
-import { lexSource } from '../services/lexer.service'
-import { buildAst } from '../services/parser.service'
-import { semanticCheck } from '../services/semantic.service'
+import { lexSource, buildAst, semanticCheck } from '../services'
 
 export function useCompiler() {
   const fileInputRef = useRef<HTMLInputElement | null>(null)

@@ -1,7 +1,5 @@
 import { readFileSync } from 'fs';
-import { lexSource } from './src/services/lexer.service';
-import { buildAst } from './src/services/parser.service';
-import { semanticCheck } from './src/services/semantic.service';
+import { lexSource, buildAst, semanticCheck } from './src/services';
 
 const testCases = [
   { file: 'tests/01-all-pass.txt', expectLex: 'PASS', expectSyntax: 'PASS', expectSemantic: 'PASS' },
@@ -32,7 +30,6 @@ for (const test of testCases) {
 
   console.log(`📄 Testing: ${test.file}`);
 
-  // Lexical Phase
   try {
     tokens = lexSource(source);
     lexResult = 'PASS';
@@ -41,7 +38,6 @@ for (const test of testCases) {
     console.log(`   ❌ Lexical: ${e.message}`);
   }
 
-  // Syntax Phase
   if (lexResult === 'PASS') {
     try {
       ast = buildAst(source);
@@ -54,7 +50,6 @@ for (const test of testCases) {
     syntaxResult = 'N/A';
   }
 
-  // Semantic Phase
   if (syntaxResult === 'PASS') {
     try {
       const findings = semanticCheck(ast);
@@ -72,7 +67,6 @@ for (const test of testCases) {
     semanticResult = 'N/A';
   }
 
-  // Verify expectations
   const lexMatch = test.expectLex === lexResult;
   const syntaxMatch = test.expectSyntax === syntaxResult || test.expectSyntax === 'N/A';
   const semanticMatch = test.expectSemantic === semanticResult || test.expectSemantic === 'N/A';
