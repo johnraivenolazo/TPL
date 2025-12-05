@@ -4,8 +4,8 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        surface: '#0b1224',
-        panel: '#0f172a',
+        surface: '#000000',
+        panel: '#000000',
       },
       boxShadow: {
         card: '0 14px 40px rgba(15, 23, 42, 0.45)',

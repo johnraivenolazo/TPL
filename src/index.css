@@ -11,13 +11,7 @@
 
 body {
   @apply m-0 min-h-screen bg-black text-slate-100 antialiased;
-  background: #000;
-}
-
-.bg-grid {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-  background-size: 24px 24px;
+  background: #000000;
 }
 
 /* Global scrollbar styling to match dark theme */

@@ -1,6 +1,4 @@
-// Clean rewrite of App with gated phases and file-driven flow
-import { useMemo, useRef, useState, type ReactNode } from 'react'
-import './App.css'
+import { useRef, useState, type ReactNode } from 'react'
 
 type Token = {
   type: string
@@ -28,11 +26,6 @@ const levelStyles: Record<Level, string> = {
   warn: 'bg-amber-900/60 text-amber-100 border-amber-700',
   error: 'bg-rose-900/60 text-rose-100 border-rose-700',
 }
-
-const demoSource = `let total: number = 3 + items;
-let items = 2;
-if (flag) { count = total + items; } else { count = false; }
-function add(a: number, b: number) { return a + b; }`
 
 const keywordSet = new Set(['let', 'const', 'var', 'function', 'if', 'else', 'return', 'true', 'false'])
 const operatorSet = new Set(['=', '+', '-', '*', '/', '==', '!=', '<=', '>=', '=>'])
@@ -101,23 +94,23 @@ function semanticCheck(ast: AstNode): SemanticFinding[] {
 
   const registerVar = (name: string, type: 'number' | 'boolean' | 'unknown') => {
     scope.set(name, type)
-    findings.push({ level: 'info', message: `Declared '${name}' as ${type === 'unknown' ? 'unknown' : type}.` })
+    findings.push({ level: 'info', message: `'${name}': ${type}` })
   }
 
   const checkAssignment = (lhs: string, rhs: string) => {
     const rhsType = inferType(rhs)
     const current = scope.get(lhs)
     if (!current) {
-      findings.push({ level: 'warn', message: `Assignment to '${lhs}' before declaration.` })
+      findings.push({ level: 'warn', message: `'${lhs}' used before declaration` })
       if (rhsType) scope.set(lhs, rhsType)
       return
     }
     if (rhsType && current !== 'unknown' && rhsType !== current) {
-      findings.push({ level: 'error', message: `Type mismatch on '${lhs}': ${current} vs ${rhsType}.` })
+      findings.push({ level: 'error', message: `Type mismatch: '${lhs}' is ${current}, got ${rhsType}` })
     }
     if (rhsType && current === 'unknown') {
       scope.set(lhs, rhsType)
-      findings.push({ level: 'info', message: `Inferred '${lhs}' as ${rhsType} from assignment.` })
+      findings.push({ level: 'info', message: `'${lhs}' inferred as ${rhsType}` })
     }
   }
 
@@ -132,7 +125,7 @@ function semanticCheck(ast: AstNode): SemanticFinding[] {
       const chosen: 'number' | 'boolean' | 'unknown' = (annotated?.[1] as 'number' | 'boolean' | undefined) || rhsType || 'unknown'
       registerVar(name, chosen)
       if (annotated && rhsType && annotated[1] !== rhsType) {
-        findings.push({ level: 'warn', message: `Annotation vs value mismatch for '${name}'.` })
+        findings.push({ level: 'warn', message: `Type annotation mismatch for '${name}'` })
       }
       if (rhs) checkAssignment(name, rhs)
       return
@@ -148,42 +141,32 @@ function semanticCheck(ast: AstNode): SemanticFinding[] {
     const ids = extractIdentifiers(label)
     ids.forEach((id) => {
       if (!scope.has(id)) {
-        findings.push({ level: 'warn', message: `Usage of '${id}' before declaration.` })
+        findings.push({ level: 'warn', message: `'${id}' used before declaration` })
       }
     })
   })
 
-  if (!findings.length) {
-    findings.push({ level: 'info', message: 'No semantic issues detected in this toy analysis.' })
-  }
-
   return findings
 }
 
-function countAstNodes(node: AstNode | null): number {
-  if (!node) return 0
-  if (!node.children || node.children.length === 0) return 1
-  return 1 + node.children.reduce((acc, child) => acc + countAstNodes(child), 0)
-}
-
 function TokenTable({ tokens }: { tokens: Token[] }) {
-  if (!tokens.length) return <p className="text-slate-400">No tokens produced.</p>
+  if (!tokens.length) return <p className="text-slate-600 text-sm">No tokens</p>
   return (
-    <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 shadow-inner">
-      <table className="min-w-full text-left text-sm text-slate-200">
-        <thead className="bg-slate-900/80 text-[11px] uppercase tracking-wide text-slate-400">
+    <div className="overflow-hidden rounded-lg border border-slate-800">
+      <table className="w-full text-left text-sm">
+        <thead className="bg-slate-900 text-slate-400">
           <tr>
             <th className="px-3 py-2">Type</th>
-            <th className="px-3 py-2">Lexeme</th>
-            <th className="px-3 py-2">Span</th>
+            <th className="px-3 py-2">Value</th>
+            <th className="px-3 py-2">Position</th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-800">
           {tokens.map((token, idx) => (
-            <tr key={`${token.lexeme}-${idx}`} className="hover:bg-slate-900/80">
-              <td className="px-3 py-2 font-semibold text-slate-100">{token.type}</td>
-              <td className="px-3 py-2 text-sky-200">{token.lexeme}</td>
-              <td className="px-3 py-2 text-slate-400">[{token.start}, {token.end})</td>
+            <tr key={idx} className="hover:bg-slate-900">
+              <td className="px-3 py-2 text-slate-300">{token.type}</td>
+              <td className="px-3 py-2 text-sky-400">{token.lexeme}</td>
+              <td className="px-3 py-2 text-slate-500 text-xs">{token.start}–{token.end}</td>
             </tr>
           ))}
         </tbody>
@@ -194,36 +177,33 @@ function TokenTable({ tokens }: { tokens: Token[] }) {
 
 function SyntaxTree({ node }: { node: AstNode }) {
   const renderNode = (current: AstNode, path: string): ReactNode => (
-    <li className="space-y-2" key={path}>
-      <div className="inline-flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-xs font-semibold text-slate-100">
-        <span className="text-slate-300">{current.type}</span>
-        {current.label && <span className="text-slate-400">· {current.label}</span>}
+    <li className="space-y-1.5" key={path}>
+      <div className="inline-flex gap-2 rounded-lg border border-slate-800 bg-slate-900 px-3 py-1.5 text-xs text-white">
+        <span className="font-medium">{current.type}</span>
+        {current.label && <span className="text-slate-400">{current.label}</span>}
       </div>
       {current.children && current.children.length > 0 && (
-        <ul className="space-y-2 border-l border-slate-800 pl-4">
+        <ul className="space-y-1.5 border-l-2 border-slate-800 pl-4 ml-2">
           {current.children.map((child, idx) => renderNode(child, `${path}-${idx}`))}
         </ul>
       )}
     </li>
   )
 
-  return <ul className="space-y-2">{renderNode(node, 'root')}</ul>
+  return <ul className="space-y-1.5">{renderNode(node, 'root')}</ul>
 }
 
 function SemanticList({ findings }: { findings: SemanticFinding[] }) {
-  if (!findings.length) return <p className="text-slate-400">No semantic findings.</p>
+  if (!findings.length) return <p className="text-slate-600 text-sm">No findings</p>
   return (
     <div className="space-y-2">
       {findings.map((finding, idx) => (
         <div
-          key={`${finding.level}-${idx}`}
-          className={`flex items-start gap-3 rounded-xl border px-3 py-2 shadow-sm ${levelStyles[finding.level]}`}
+          key={idx}
+          className={`rounded-lg border px-3 py-2 text-sm ${levelStyles[finding.level]}`}
         >
-          <span className="mt-1 inline-flex h-2.5 w-2.5 rounded-full bg-current opacity-80" aria-hidden />
-          <div>
-            <p className="text-[11px] uppercase tracking-wide text-slate-300/80">{finding.level}</p>
-            <p className="text-sm text-slate-50">{finding.message}</p>
-          </div>
+          <span className="text-xs uppercase tracking-wide opacity-75">{finding.level}</span>
+          <p className="mt-0.5">{finding.message}</p>
         </div>
       ))}
     </div>
@@ -238,28 +218,13 @@ function App() {
   const [tokens, setTokens] = useState<Token[]>([])
   const [ast, setAst] = useState<AstNode | null>(null)
   const [findings, setFindings] = useState<SemanticFinding[]>([])
-  const [message, setMessage] = useState<{ level: Level; text: string } | null>(null)
 
-  const canLex = source.length > 0 && phase === 'idle'
+  // Button states according to diagram specifications
+  const hasFile = source.length > 0
+  const canLex = hasFile && phase === 'idle'
   const canParse = phase === 'lexed'
   const canCheck = phase === 'parsed'
-  const canClear = source.length > 0 || tokens.length > 0 || findings.length > 0 || ast !== null
-
-  const progress = useMemo(() => {
-    const steps: { label: string; active: boolean }[] = [
-      { label: 'Lexical', active: phase === 'lexed' || phase === 'parsed' || phase === 'checked' },
-      { label: 'Syntax', active: phase === 'parsed' || phase === 'checked' },
-      { label: 'Semantic', active: phase === 'checked' },
-    ]
-    return steps
-  }, [phase])
-
-  const resultPhase = useMemo(() => {
-    if (phase === 'checked') return 'Semantic Analysis'
-    if (phase === 'parsed') return 'Syntax Analysis'
-    if (phase === 'lexed') return 'Lexical Analysis'
-    return 'Awaiting input'
-  }, [phase])
+  const canClear = hasFile
 
   const handleFilePick = () => fileInputRef.current?.click()
 
@@ -273,7 +238,6 @@ function App() {
     setTokens([])
     setAst(null)
     setFindings([])
-    setMessage({ level: 'info', text: 'File loaded. Run lexical analysis to begin.' })
   }
 
   const runLexical = () => {
@@ -283,7 +247,6 @@ function App() {
     setAst(null)
     setFindings([])
     setPhase('lexed')
-    setMessage({ level: 'info', text: `Lexical analysis produced ${result.length} token(s).` })
   }
 
   const runSyntax = () => {
@@ -292,7 +255,6 @@ function App() {
     setAst(tree)
     setFindings([])
     setPhase('parsed')
-    setMessage({ level: 'info', text: 'Syntax analysis built a compact AST.' })
   }
 
   const runSemantic = () => {
@@ -300,7 +262,6 @@ function App() {
     const issues = semanticCheck(ast)
     setFindings(issues)
     setPhase('checked')
-    setMessage({ level: 'info', text: 'Semantic analysis completed.' })
   }
 
   const handleClear = () => {
@@ -310,182 +271,102 @@ function App() {
     setAst(null)
     setFindings([])
     setPhase('idle')
-    setMessage(null)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
   return (
-    <div className="relative min-h-screen bg-surface">
-      <div className="absolute inset-0 glass-sheen" aria-hidden />
-      <main className="relative mx-auto max-w-6xl px-6 py-12 space-y-8 bg-grid">
-        <header className="space-y-4 rounded-3xl border border-slate-800 bg-black/80 p-6 shadow-card backdrop-blur grid-overlay">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] uppercase tracking-[0.18em] text-slate-300">Front-end pipeline</span>
-            <span className="rounded-full bg-emerald-900/50 px-3 py-1 text-xs text-emerald-200 border border-emerald-700">Lexical • Syntax • Semantic</span>
-            <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] text-slate-300">No codegen / opt</span>
-          </div>
-          <div className="space-y-3">
-            <h1 className="text-3xl font-bold text-slate-50 leading-snug md:text-4xl">Lex → Parse → Check</h1>
-            <p className="max-w-4xl text-sm text-slate-300">Load a snippet or the demo, run each phase in order, and watch the outputs update.</p>
-            <div className="grid gap-3 sm:grid-cols-3">
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3 text-sm text-slate-200 shadow-inner">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Phase</p>
-                <p className="text-lg font-semibold text-slate-50">{resultPhase}</p>
-              </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3 text-sm text-slate-200 shadow-inner">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Tokens</p>
-                <p className="text-lg font-semibold text-slate-50">{tokens.length}</p>
-              </div>
-              <div className="rounded-2xl border border-slate-800 bg-slate-900/70 px-4 py-3 text-sm text-slate-200 shadow-inner">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">AST Nodes</p>
-                <p className="text-lg font-semibold text-slate-50">{countAstNodes(ast)}</p>
-              </div>
-            </div>
-          </div>
-        </header>
-
-        <section className="grid gap-4 lg:grid-cols-[320px_1fr]">
-          <div className="space-y-4 rounded-2xl border border-slate-800 bg-black/80 p-4 shadow-card backdrop-blur">
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Controls</p>
-                <h2 className="text-xl font-semibold text-slate-50">Phase runner</h2>
-              </div>
-              <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] text-slate-300">Gated flow</span>
-            </div>
-
-            <div className="space-y-2">
-              <button
-                onClick={handleFilePick}
-                className="w-full rounded-xl border border-sky-500 bg-sky-900/40 px-3 py-2 text-sm font-semibold text-sky-100 shadow-sm transition hover:border-sky-400 focus:outline-none focus:ring-2 focus:ring-sky-500/60"
-              >
-                Open File
-              </button>
-              <input ref={fileInputRef} type="file" accept=".txt,.js,.ts,.tsx,.json,.md" className="hidden" onChange={handleFileChange} />
-              <button
-                onClick={() => {
-                  setSource(demoSource)
-                  setFileName('demo.txt')
-                  setPhase('idle')
-                  setTokens([])
-                  setAst(null)
-                  setFindings([])
-                  setMessage({ level: 'info', text: 'Demo source loaded. Run lexical analysis to begin.' })
-                }}
-                className="w-full rounded-xl border border-slate-700 bg-slate-900/70 px-3 py-2 text-sm font-semibold text-slate-100 shadow-sm transition hover:border-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-500/60"
-              >
-                Load demo source
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <button
-                onClick={runLexical}
-                disabled={!canLex}
-                className={`w-full rounded-xl border px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-sky-500/60 ${
-                  canLex ? 'border-slate-700 bg-slate-900/80 text-slate-100 hover:border-slate-500' : 'cursor-not-allowed border-slate-800 bg-slate-900/40 text-slate-600'
-                }`}
-              >
-                Lexical Analysis
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <button
-                onClick={runSyntax}
-                disabled={!canParse}
-                className={`w-full rounded-xl border px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-indigo-500/60 ${
-                  canParse ? 'border-slate-700 bg-slate-900/80 text-slate-100 hover:border-slate-500' : 'cursor-not-allowed border-slate-800 bg-slate-900/40 text-slate-600'
-                }`}
-              >
-                Syntax Analysis
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <button
-                onClick={runSemantic}
-                disabled={!canCheck}
-                className={`w-full rounded-xl border px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-emerald-500/60 ${
-                  canCheck ? 'border-slate-700 bg-slate-900/80 text-slate-100 hover:border-slate-500' : 'cursor-not-allowed border-slate-800 bg-slate-900/40 text-slate-600'
-                }`}
-              >
-                Semantic Analysis
-              </button>
-            </div>
-
-            <div className="space-y-2">
-              <button
-                onClick={handleClear}
-                disabled={!canClear}
-                className={`w-full rounded-xl border px-3 py-2 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-rose-500/60 ${
-                  canClear ? 'border-slate-700 bg-slate-900/80 text-slate-100 hover:border-slate-500' : 'cursor-not-allowed border-slate-800 bg-slate-900/40 text-slate-600'
-                }`}
-              >
-                Clear
-              </button>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 text-xs text-slate-300 shadow-inner">
-              <p className="font-semibold text-slate-100 mb-2">Progress</p>
-              <div className="flex flex-wrap gap-2">
-                {progress.map((step, idx) => (
-                  <span
-                    key={step.label}
-                    className={`rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.12em] ${
-                      step.active ? 'border-sky-500 bg-sky-900/50 text-sky-100' : 'border-slate-700 bg-slate-900/60 text-slate-400'
-                    }`}
-                  >
-                    {idx + 1}. {step.label}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-xl border border-slate-800 bg-slate-900/70 px-3 py-3 text-xs text-slate-300 shadow-inner">
-              <p className="font-semibold text-slate-100">Status</p>
-              <p className="mt-1 text-slate-300">{message ? message.text : 'Waiting for input.'}</p>
-              {fileName && <p className="mt-1 text-slate-400">File: {fileName}</p>}
-              <p className="mt-1 text-slate-400">Phase: {phase}</p>
-            </div>
+    <div className="h-screen bg-black overflow-hidden">
+      <main className="h-full mx-auto max-w-7xl p-4 md:p-6">
+        <div className="h-full flex flex-col lg:flex-row gap-4">
+          {/* Controls - Left Side */}
+          <div className="flex lg:flex-col gap-2 lg:gap-3 lg:w-48 shrink-0">
+            <button
+              onClick={handleFilePick}
+              className="flex-1 lg:flex-none rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800 hover:border-slate-600 transition-all duration-200"
+            >
+              Open File
+            </button>
+            <input ref={fileInputRef} type="file" accept=".txt,.js,.ts,.tsx,.json,.md" className="hidden" onChange={handleFileChange} />
+            
+            <button
+              onClick={runLexical}
+              disabled={!canLex}
+              className={`flex-1 lg:flex-none rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+                canLex 
+                  ? 'bg-sky-600 text-white hover:bg-sky-500 hover:scale-105 active:scale-95' 
+                  : 'bg-slate-900 text-slate-600 cursor-not-allowed border border-slate-800'
+              }`}
+            >
+              Lexical Analysis
+            </button>
+            
+            <button
+              onClick={runSyntax}
+              disabled={!canParse}
+              className={`flex-1 lg:flex-none rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+                canParse 
+                  ? 'bg-purple-600 text-white hover:bg-purple-500 hover:scale-105 active:scale-95' 
+                  : 'bg-slate-900 text-slate-600 cursor-not-allowed border border-slate-800'
+              }`}
+            >
+              Syntax Analysis
+            </button>
+            
+            <button
+              onClick={runSemantic}
+              disabled={!canCheck}
+              className={`flex-1 lg:flex-none rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+                canCheck 
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-500 hover:scale-105 active:scale-95' 
+                  : 'bg-slate-900 text-slate-600 cursor-not-allowed border border-slate-800'
+              }`}
+            >
+              Semantic Analysis
+            </button>
+            
+            <button
+              onClick={handleClear}
+              disabled={!canClear}
+              className={`flex-1 lg:flex-none rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+                canClear 
+                  ? 'border border-slate-700 text-slate-300 hover:bg-slate-900 hover:border-slate-600 hover:text-white' 
+                  : 'text-slate-700 cursor-not-allowed border border-slate-800'
+              }`}
+            >
+              Clear
+            </button>
           </div>
 
-          <div className="space-y-4">
-            <div className="rounded-2xl border border-slate-800 bg-black/80 p-4 shadow-card backdrop-blur">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Source</p>
-                  <h3 className="text-lg font-semibold text-slate-50">Input</h3>
+          {/* Main Content - Right Side */}
+          <div className="flex-1 flex flex-col gap-4 min-h-0">
+            {/* Code Text Area */}
+            <div className="flex-1 flex flex-col min-h-0 relative">
+              <textarea
+                value={source}
+                readOnly
+                placeholder="No file selected. Click 'Open File' to load source code."
+                className="flex-1 w-full rounded-lg border border-slate-800 bg-slate-950 p-3 md:p-4 text-xs md:text-sm text-slate-300 font-mono resize-none focus:outline-none focus:ring-2 focus:ring-slate-700"
+              />
+              {fileName && (
+                <div className="absolute top-2 right-6 text-md text-slate-500 bg-slate-950 px-2 py-1 rounded border-none">
+                  {fileName}
                 </div>
-                <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] text-slate-300">Preview</span>
-              </div>
-              <div className="mt-3 max-h-72 overflow-auto rounded-xl border border-slate-800 bg-slate-900/60 p-3 text-sm text-slate-100 shadow-inner">
-                {source ? source : <span className="text-slate-500">Load a file or the demo to view it here.</span>}
-              </div>
+              )}
             </div>
 
-            <div className="rounded-2xl border border-slate-800 bg-black/80 p-4 shadow-card backdrop-blur">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div>
-                  <p className="text-[11px] uppercase tracking-[0.18em] text-slate-400">Results</p>
-                  <h3 className="text-lg font-semibold text-slate-50">{resultPhase}</h3>
-                </div>
-                <span className="rounded-full border border-slate-700 bg-slate-900/70 px-3 py-1 text-[11px] text-slate-300">Latest run</span>
-              </div>
-
-              <div className="mt-3 space-y-4">
-                {phase === 'lexed' && <TokenTable tokens={tokens} />}
-                {phase === 'parsed' && ast && (
-                  <div className="max-h-[420px] overflow-auto pr-2">
-                    <SyntaxTree node={ast} />
-                  </div>
+            {/* Result Text Area */}
+            <div className="flex-1 flex flex-col min-h-0">
+              <div className="overflow-auto flex-1 rounded-lg border border-slate-800 bg-slate-950 p-3 md:p-4">
+                {phase === 'idle' && (
+                  <p className="text-slate-600 text-sm">No results yet. Load a file and run analysis.</p>
                 )}
+                {phase === 'lexed' && <TokenTable tokens={tokens} />}
+                {phase === 'parsed' && ast && <SyntaxTree node={ast} />}
                 {phase === 'checked' && <SemanticList findings={findings} />}
-                {phase === 'idle' && <p className="text-slate-500">Results will appear here after you run a phase.</p>}
               </div>
             </div>
           </div>
-        </section>
+        </div>
       </main>
     </div>
   )
