@@ -1,4 +1,5 @@
 interface ControlPanelProps {
+  canOpenFile: boolean
   canLex: boolean
   canParse: boolean
   canCheck: boolean
@@ -13,6 +14,7 @@ interface ControlPanelProps {
 }
 
 export function ControlPanel({
+  canOpenFile,
   canLex,
   canParse,
   canCheck,
@@ -27,12 +29,23 @@ export function ControlPanel({
 }: ControlPanelProps) {
   return (
     <div className="flex lg:flex-col gap-2 lg:gap-3 lg:w-48 shrink-0">
-      <button
-        onClick={onOpenFile}
-        className="flex-1 lg:flex-none rounded-lg border border-slate-700 bg-slate-900 px-4 py-2.5 text-sm font-medium text-white hover:bg-slate-800 hover:border-slate-600 transition-all duration-200"
-      >
-        Open File
-      </button>
+      <div className="flex-1 lg:flex-none">
+        <button
+          onClick={onOpenFile}
+          disabled={!canOpenFile}
+          className={`w-full rounded-lg border px-4 py-2.5 text-sm font-medium transition-all duration-200 ${
+            canOpenFile
+              ? 'border-slate-700 bg-slate-900 text-white hover:bg-slate-800 hover:border-slate-600'
+              : 'border-slate-800 bg-slate-900 text-slate-600 cursor-not-allowed'
+          }`}
+          title={!canOpenFile ? 'Please clear errors before opening a new file' : 'Open a file'}
+        >
+          Open File
+        </button>
+        {!canOpenFile && (
+          <p className="mt-1 text-xs text-amber-400">Clear errors first</p>
+        )}
+      </div>
       <input
         ref={fileInputRef}
         type="file"

@@ -14,6 +14,7 @@ function App() {
     ast,
     findings,
     phaseResults,
+    canOpenFile,
     canLex,
     canParse,
     canCheck,
@@ -31,6 +32,7 @@ function App() {
       <main className="h-full mx-auto max-w-7xl p-4 md:p-6">
         <div className="h-full flex flex-col lg:flex-row gap-4">
           <ControlPanel
+            canOpenFile={canOpenFile}
             canLex={canLex}
             canParse={canParse}
             canCheck={canCheck}

@@ -13,12 +13,17 @@ export function useCompiler() {
   const [phaseResults, setPhaseResults] = useState<PhaseResult[]>([])
 
   const hasFile = source.length > 0
+  const hasError = phaseResults.some(result => result.status === 'error')
+  const canOpenFile = !hasFile || !hasError
   const canLex = hasFile && phase === 'idle'
   const canParse = phase === 'lexed'
   const canCheck = phase === 'parsed'
   const canClear = hasFile
 
-  const handleFilePick = () => fileInputRef.current?.click()
+  const handleFilePick = () => {
+    if (!canOpenFile) return
+    fileInputRef.current?.click()
+  }
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0]
@@ -121,6 +126,7 @@ export function useCompiler() {
     ast,
     findings,
     phaseResults,
+    canOpenFile,
     canLex,
     canParse,
     canCheck,
