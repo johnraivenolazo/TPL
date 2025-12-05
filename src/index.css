@@ -1,0 +1,55 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  font-family: 'Inter', 'SF Pro Display', system-ui, -apple-system, sans-serif;
+}
+
+body {
+  @apply m-0 min-h-screen bg-slate-950 text-slate-100 antialiased;
+  background: radial-gradient(120% 120% at 10% 10%, rgba(56, 189, 248, 0.12), transparent),
+    radial-gradient(120% 120% at 90% 0%, rgba(168, 85, 247, 0.12), transparent),
+    #0b1224;
+}
+
+.bg-grid {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Global scrollbar styling to match dark theme */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 #0f172a;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #0f172a;
+  border-radius: 999px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #38bdf8, #8b5cf6);
+  border-radius: 999px;
+  border: 2px solid #0f172a;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #0ea5e9, #7c3aed);
+}
+
+a {
+  @apply text-sky-300 underline-offset-4 hover:text-sky-200;
+}
+
+code {
+  @apply rounded bg-slate-900 px-1.5 py-0.5 text-sky-200;
+}
